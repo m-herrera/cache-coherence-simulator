@@ -1,6 +1,7 @@
 import numpy as np
 from Model.Instruction import *
 import matplotlib.pyplot as plt
+import random
 
 
 class Processor:
@@ -28,7 +29,7 @@ class Processor:
             elif sigma < point:
                 rw_instructions += 1
                 instruction.set_instruction_type(InstructionTypes.WRITE)
-                # instruction.set_data = random
+                instruction.mem_data = np.random.randint(0, 65536)  # 0xFFFF + 1
             self.instructions.append(instruction)
 
         _lambda = 16

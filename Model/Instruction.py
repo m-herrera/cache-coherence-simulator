@@ -21,7 +21,7 @@ class Instruction:
         return '{:04b}'.format(self.mem_address)
 
     def __str__(self):
-        representation = self.parent + " " + self.instruction_type.name
+        representation = self.parent + ": " + self.instruction_type.name
         if self.instruction_type != InstructionTypes.CALC:
             representation += " " + self.get_address_str()
             if self.instruction_type == InstructionTypes.WRITE:

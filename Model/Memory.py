@@ -1,3 +1,6 @@
+import time
+
+
 class Memory:
 
     # block_size is specified in bytes
@@ -8,4 +11,22 @@ class Memory:
         self.content = [0] * num_blocks
 
     def __str__(self):
-        return self.content
+        return str(self.content)
+
+    # TODO: Handle errors
+    def write(self, address, data):
+        print("Writing memory contents at address: " + str(address))
+        if address >= self.num_blocks:
+            print("Write error: Address out of range")
+        elif data >= self.block_size * 255:
+            print("Write error: Data too big")
+        time.sleep(self.latency)
+        self.content[address] = data
+
+    # TODO: Handle errors
+    def read(self, address):
+        print("Reading memory contents at address: " + str(address))
+        if address >= self.num_blocks:
+            print("Read error: Address out of range")
+        time.sleep(self.latency)
+        return self.content[address]

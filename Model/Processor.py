@@ -1,7 +1,6 @@
 import numpy as np
 from Model.Instruction import *
 import matplotlib.pyplot as plt
-import random
 
 
 class Processor:

@@ -34,6 +34,13 @@ class Cache:
             print("Write error: Data too big")
         time.sleep(self.latency)
         set = self.content[address % (self.num_blocks // self.associativity)]
+        for cache_block in set:
+            hit = cache_block.address == address
+            if hit:
+                print("Hit")
+                cache_block.data = data
+                set.insert(0, set.pop(set.index(cache_block)))  # Update for LRU policy
+                return cache_block
         set[-1].address = address
         set[-1].data = data
         set.insert(0, set.pop(-1))  # Write in position for LRU

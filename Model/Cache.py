@@ -60,17 +60,23 @@ class Cache:
         print("Miss")
         return None
 
+    def get_block(self):
+        return
+
+    def put_block(self):
+        return
+
 
 class CacheBlockStates(Enum):
-    Modified = 0
-    Owned = 1
-    Exclusive = 2
-    Shared = 3
-    Invalid = 4
+    MODIFIED = 0
+    OWNED = 1
+    EXCLUSIVE = 2
+    SHARED = 3
+    INVALID = 4
 
 
 class CacheBlock:
-    def __init__(self, identifier, coherence_state=CacheBlockStates.Invalid, data=0, address=0):
+    def __init__(self, identifier, coherence_state=CacheBlockStates.INVALID, data=0, address=0):
         self.identifier = identifier
         self.coherence_state = coherence_state
         self.data = data

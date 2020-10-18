@@ -6,6 +6,9 @@ class MemoryController:
         self.memory = memory
         self.memory_bus = memory_bus
 
+        if memory_bus is not None:
+            memory_bus.connect_memory_controller(self)
+
     def connect_memory(self, memory):
         self.memory = memory
 

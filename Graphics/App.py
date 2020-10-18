@@ -1,6 +1,8 @@
+import threading
+
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QWidget, QTableWidget, QVBoxLayout, QAbstractItemView, QTableWidgetItem, QHBoxLayout, \
-    QGridLayout, QGroupBox, QHeaderView, QLabel
+from PyQt5.QtWidgets import QWidget, QTableWidget, QAbstractItemView, QTableWidgetItem, \
+    QGridLayout, QHeaderView, QLabel, QPushButton, QLineEdit
 
 
 class App(QWidget):
@@ -14,6 +16,13 @@ class App(QWidget):
         self.width = 1080
         self.height = 720
         self.layout = QGridLayout()
+        self.step_button = QPushButton("Step")
+        self.exec_button = QPushButton("Execute")
+        self.processors = []
+        self.caches = []
+        self.instructions = [None, None, None, None]
+        self.next_instructions = [None, None, None, None]
+        self.memory = None
         self.init_ui()
 
     def init_ui(self):
@@ -32,38 +41,97 @@ class App(QWidget):
         self.layout.addWidget(self.memory_view, 1, 3, 6, 1, Qt.AlignHCenter)
 
         self.layout.addWidget(QLabel("Cache View"), 0, 1, 1, 2, Qt.AlignCenter)
-        self.layout.addWidget(QLabel("Processor: 1"), 1, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(QLabel("Processor: 2"), 1, 2, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(QLabel("Processor: 3"), 4, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(QLabel("Processor: 4"), 4, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 0"), 1, 1, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 1"), 1, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 2"), 5, 1, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 3"), 5, 2, 1, 1, Qt.AlignCenter)
 
-        self.layout.addWidget(self.cache_views[0], 3, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.cache_views[1], 3, 2, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.cache_views[2], 6, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.cache_views[3], 6, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[0], 4, 1, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[1], 4, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[2], 8, 1, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[3], 8, 2, 1, 1, Qt.AlignCenter)
 
-        self.set_instruction("P0: CALC", 1)
-        self.set_instruction("P0: CALC", 2)
-        self.set_instruction("P0: CALC", 3)
-        self.set_instruction("P0: CALC", 4)
         self.layout.addWidget(QLabel("Instructions View"), 0, 0, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.step_button, 2, 0)
+        self.step_button.clicked.connect(lambda: self.step())
+        self.layout.addWidget(self.exec_button, 3, 0)
+        self.exec_button.clicked.connect(lambda: self.execute())
 
         self.setLayout(self.layout)
-
         # Show widget
         self.show()
+
+    def execute(self):
+        i = 0
+        threads = []
+        for processor in self.processors:
+            self.instructions[i].setText(processor.instructions[0].__str__())
+            print(processor.instructions[0])
+            thread = threading.Thread(target=processor.execute)
+            thread.start()
+            threads.append(thread)
+            i += 1
+
+        for thread in threads:
+            thread.join()
+        self.update_cache()
+        self.update_memory_view(self.memory)
+
+    def step(self):
+        i = 0
+        threads = []
+        for processor in self.processors:
+            if len(processor.instructions) == 0:
+                return
+            if self.instructions[i].text() == "":
+                self.next_instructions[i].setText(processor.instructions[0].__str__())
+            self.instructions[i].setText(self.next_instructions[i].text())
+            if len(processor.instructions) != 1:
+                self.next_instructions[i].setText(processor.instructions[1].__str__())
+            else:
+                self.next_instructions[i].setText("")
+            processor.set_next(self.instructions[i].text())
+            # processor.instructions[]
+            thread = threading.Thread(target=processor.step_execute)
+            thread.start()
+            threads.append(thread)
+            i += 1
+
+        for thread in threads:
+            thread.join()
+        self.update_cache()
+        self.update_memory_view(self.memory)
+
+    def add_processor(self, processor):
+        self.processors.append(processor)
+        self.add_cache(processor.snooper.cache)
+        self.set_instruction("", len(self.processors))
+
+    def add_cache(self, cache):
+        self.caches.append(cache)
+        self.update_cache()
+
+    def set_memory(self, memory):
+        self.memory = memory
+        self.update_memory_view(self.memory)
 
     def set_instruction(self, instruction, processor):
         i = 2
         j = 1
+        self.next_instructions[processor - 1] = QLineEdit(instruction)
+        self.instructions[processor - 1] = QLabel(instruction)
         if processor == 1:
-            self.layout.addWidget(QLabel(instruction), i, j, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i, j, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.next_instructions[processor - 1], i + 1, j, 1, 1, Qt.AlignCenter)
         elif processor == 2:
-            self.layout.addWidget(QLabel(instruction), i, j + 1, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i, j + 1, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.next_instructions[processor - 1], i + 1, j + 1, 1, 1, Qt.AlignCenter)
         elif processor == 3:
-            self.layout.addWidget(QLabel(instruction), i + 3, j, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i + 4, j, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.next_instructions[processor - 1], i + 5, j, 1, 1, Qt.AlignCenter)
         elif processor == 4:
-            self.layout.addWidget(QLabel(instruction), i + 3, j + 1, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i + 4, j + 1, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.next_instructions[processor - 1], i + 5, j + 1, 1, 1, Qt.AlignCenter)
 
     def init_memory_view(self, memory_blocks=16):
         self.memory_view = QTableWidget()
@@ -102,6 +170,12 @@ class App(QWidget):
         cache_view.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
         cache_view.setMinimumWidth(315)
         self.cache_views.append(cache_view)
+
+    def update_cache(self):
+        i = 0
+        for cache in self.caches:
+            self.update_cache_view(cache, i)
+            i += 1
 
     def update_cache_view(self, cache, index):
         for i in range(self.cache_views[index].rowCount()):

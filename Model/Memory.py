@@ -15,7 +15,6 @@ class Memory:
 
     # TODO: Handle errors
     def write(self, address, data):
-        print("Writing memory contents at address: " + str(address))
         if address >= self.num_blocks:
             print("Write error: Address out of range")
         time.sleep(self.latency)
@@ -23,7 +22,6 @@ class Memory:
 
     # TODO: Handle errors
     def read(self, address):
-        print("Reading memory contents at address: " + str(address))
         if address >= self.num_blocks:
             print("Read error: Address out of range")
         time.sleep(self.latency)

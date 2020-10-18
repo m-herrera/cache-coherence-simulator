@@ -1,7 +1,5 @@
 import threading
 
-from PyQt5.QtWidgets import QApplication
-import sys
 from Model.MemoryBus import MemoryBus
 from Model.MemoryController import MemoryController
 from Model.Processor import *
@@ -9,13 +7,8 @@ from Model.Memory import *
 from Model.Cache import *
 from Model.Snooper import Snooper
 
-from Graphics.App import App
-
 
 def main():
-    app = QApplication(sys.argv)
-    ex = App()
-
     memory_bus = MemoryBus()
 
     memory = Memory(0)
@@ -35,20 +28,30 @@ def main():
     processor3 = Processor("P2", 9, snooper=snooper3)
     processor4 = Processor("P3", 9, snooper=snooper4)
 
-    processor1.load_instructions(100)
-    processor2.load_instructions(100)
-    processor3.load_instructions(100)
-    processor4.load_instructions(100)
+    processor1.load_instructions(30)
+    processor2.load_instructions(30)
+    processor3.load_instructions(30)
+    processor4.load_instructions(30)
 
-    ex.add_processor(processor1)
-    ex.add_processor(processor2)
-    ex.add_processor(processor3)
-    ex.add_processor(processor4)
+    t1 = threading.Thread(target=processor1.execute)
+    t1.start()
+    t2 = threading.Thread(target=processor2.execute)
+    t2.start()
+    t3 = threading.Thread(target=processor3.execute)
+    t3.start()
+    t4 = threading.Thread(target=processor4.execute)
+    t4.start()
 
-    ex.set_memory(memory)
+    t1.join()
+    t2.join()
+    t3.join()
+    t4.join()
+    print(cache1)
+    print(cache2)
+    print(cache3)
+    print(cache4)
 
-    sys.exit(app.exec_())
-
+    print(memory)
 
 if __name__ == "__main__":
     main()

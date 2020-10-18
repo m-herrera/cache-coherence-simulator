@@ -17,6 +17,21 @@ class Processor:
     def __str__(self):
         return self.identifier
 
+    def set_next(self, instruction):
+        try:
+            parts = instruction.split()
+            if parts[1] == "READ":
+                self.instructions[0].mem_address = int(parts[2], 2)
+                self.instructions[0].type = InstructionTypes.READ
+            elif parts[1] == "WRITE":
+                self.instructions[0].mem_address = int(parts[2], 2)
+                self.instructions[0].mem_data = int(parts[3], 16)
+                self.instructions[0].type = InstructionTypes.WRITE
+            else:
+                self.instructions[0].type = InstructionTypes.CALC
+        except IndexError:
+            print("Wrong format")
+
     def load_instructions(self, amount):
         sigma = 1
         distribution = np.random.normal(0, sigma, amount)
@@ -54,16 +69,21 @@ class Processor:
                 i += 1
 
     def execute(self):
+        for i in range(len(self.instructions)):
+            self.step_execute()
+
+    def step_execute(self):
+        instruction = self.instructions[0]
         request = MemoryRequest()
-        for instruction in self.instructions:
-            if instruction.instruction_type == InstructionTypes.CALC:
-                continue
-            elif instruction.instruction_type == InstructionTypes.WRITE:
-                request.type = RequestTypes.PROCESSOR_WRITE
-            elif instruction.instruction_type == InstructionTypes.READ:
-                request.type = RequestTypes.PROCESSOR_READ
-            request.address = instruction.mem_address
-            request.data = instruction.mem_data
-            self.snooper.process(request)
-            print(instruction)
-            print(self.snooper.cache)
+        if instruction.instruction_type == InstructionTypes.CALC:
+            return
+        elif instruction.instruction_type == InstructionTypes.WRITE:
+            request.type = RequestTypes.PROCESSOR_WRITE
+        elif instruction.instruction_type == InstructionTypes.READ:
+            request.type = RequestTypes.PROCESSOR_READ
+        request.address = instruction.mem_address
+        request.data = instruction.mem_data
+        self.snooper.process(request)
+        print(instruction)
+        print(self.snooper.cache)
+        self.instructions.pop(0)

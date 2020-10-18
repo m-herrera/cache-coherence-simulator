@@ -23,8 +23,7 @@ class Snooper:
         if cache_block is None:
             return
         elif cache_block.coherence_state == CacheBlockStates.OWNED or \
-                cache_block.coherence_state == CacheBlockStates.MODIFIED or \
-                cache_block.coherence_state == CacheBlockStates.EXCLUSIVE:
+                cache_block.coherence_state == CacheBlockStates.MODIFIED:
             request = MemoryRequest()
             request.type = RequestTypes.FLUSH_WRITE_BACK
             request.data = cache_block.data

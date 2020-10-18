@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QTableWidget, QVBoxLayout, QAbstractItemView, QTableWidgetItem, QHBoxLayout, \
-    QGridLayout, QGroupBox, QHeaderView
+    QGridLayout, QGroupBox, QHeaderView, QLabel
 
 
 class App(QWidget):
@@ -25,12 +25,20 @@ class App(QWidget):
         self.init_cache_view()
         self.init_cache_view()
 
-        self.layout.addWidget(self.memory_view, 0, 0, -1, 1)
+        self.layout.addWidget(QLabel("test"), 0, 0, -1, 1)
+        self.layout.addWidget(QLabel("Memory View"), 0, 3, 1, -1, Qt.AlignCenter)
+        self.layout.addWidget(self.memory_view, 1, 3, -1, 1)
 
-        self.layout.addWidget(self.cache_views[0], 0, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.cache_views[1], 0, 2, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.cache_views[2], 1, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.cache_views[3], 1, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Cache View"), 0, 1, 1, 2, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 1"), 1, 1, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 2"), 1, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 3"), 3, 1, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 4"), 3, 2, 1, 1, Qt.AlignCenter)
+
+        self.layout.addWidget(self.cache_views[0], 2, 1, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[1], 2, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[2], 4, 1, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[3], 4, 2, 1, 1, Qt.AlignCenter)
         self.setLayout(self.layout)
 
         # Show widget
@@ -41,15 +49,22 @@ class App(QWidget):
         self.memory_view.setRowCount(memory_blocks)
         self.memory_view.setColumnCount(2)
         for i in range(memory_blocks):
-            self.memory_view.setItem(i, 0, QTableWidgetItem('{:04b}'.format(i)))
+            address = QTableWidgetItem('{:04b}'.format(i))
+            address.setTextAlignment(Qt.AlignCenter)
+            self.memory_view.setItem(i, 0, address)
         self.memory_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.memory_view.verticalHeader().hide()
+        self.memory_view.setSelectionMode(QAbstractItemView.NoSelection)
+        self.memory_view.setFocusPolicy(Qt.NoFocus)
+        self.memory_view.horizontalHeader().setStretchLastSection(True)
+        self.memory_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.memory_view.setHorizontalHeaderLabels(["Address", "Content"])
-        self.memory_view.move(0, 0)
 
     def update_memory_view(self, memory):
         for i in range(self.memory_view.rowCount()):
-            self.memory_view.setItem(i, 1, QTableWidgetItem('0x' + '{:04x}'.format(memory.content[i]).upper()))
+            data = QTableWidgetItem('0x' + '{:04x}'.format(memory.content[i]).upper())
+            data.setTextAlignment(Qt.AlignCenter)
+            self.memory_view.setItem(i, 1, data)
 
     def init_cache_view(self, cache_blocks=4):
         cache_view = QTableWidget()
@@ -57,7 +72,6 @@ class App(QWidget):
         cache_view.setColumnCount(2)
         cache_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         cache_view.setHorizontalHeaderLabels(["Address", "Content"])
-        cache_view.move(0, 0)
         cache_view.setSelectionMode(QAbstractItemView.NoSelection)
         cache_view.setFocusPolicy(Qt.NoFocus)
         cache_view.horizontalHeader().setStretchLastSection(True)

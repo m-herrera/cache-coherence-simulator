@@ -24,7 +24,7 @@ class MemoryBus:
             response = self.memory_controller.notify(request)
         return response
 
-    def set_memory_controller(self, memory_controller):
+    def connect_memory_controller(self, memory_controller):
         self.memory_controller = memory_controller
 
     def subscribe(self, listener):

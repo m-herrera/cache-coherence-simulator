@@ -7,8 +7,6 @@ class MemoryRequest:
         self.address = None
         self.data = None
         self.copies_exist = False
-        self.requester = None
-        self.receiver = None
 
 
 class RequestTypes(Enum):

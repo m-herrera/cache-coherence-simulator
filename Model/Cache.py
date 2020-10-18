@@ -1,4 +1,4 @@
-import time
+import copy
 from enum import Enum
 
 
@@ -28,37 +28,13 @@ class Cache:
                 result += cache_block.__str__() + "\n"
         return result
 
-    # TODO: Handle errors and add Replacement policy
-    def write(self, address, data):
-        if data >= self.block_size * 255:
-            print("Write error: Data too big")
-        time.sleep(self.latency)
-        set = self.content[address % (self.num_blocks // self.associativity)]
-        for cache_block in set:
-            hit = cache_block.address == address
-            if hit:
-                print("Hit")
-                cache_block.data = data
-                set.insert(0, set.pop(set.index(cache_block)))  # Update for LRU policy
-                return cache_block
-        set[-1].address = address
-        set[-1].data = data
-        set.insert(0, set.pop(-1))  # Write in position for LRU
+    def get_item(self, index):
+        for cache_set in self.content:
+            for cache_block in cache_set:
+                if cache_block.identifier == index:
+                    return cache_block.get_address_str(), cache_block.get_data_str()
 
-    # TODO: Handle errors and add Replacement policy
-    def read(self, address):
-        print("Searching address in cache")
-        time.sleep(self.latency)
-        set = self.content[address % (self.num_blocks // self.associativity)]
-        for cache_block in set:
-            hit = cache_block.address == address
-            if hit:
-                print("Hit")
-                set.insert(0, set.pop(set.index(cache_block)))  # Update for LRU policy
-                return cache_block
-
-        print("Miss")
-        return None
+        return None, None
 
     def get_block(self, address):
         _set = self.content[address % (self.num_blocks // self.associativity)]
@@ -75,12 +51,15 @@ class Cache:
             if hit:
                 block.data = cache_block.data
                 _set.insert(0, _set.pop(_set.index(block)))  # Update for LRU policy
-                return
-        _set[-1].address = cache_block.address
-        _set[-1].data = cache_block.data
-        _set[-1].coherence_state = cache_block.coherence_state
+                return None
+
+        to_replace = _set[-1]
+        original = copy.deepcopy(to_replace)
+        to_replace.address = cache_block.address
+        to_replace.data = cache_block.data
+        to_replace.coherence_state = cache_block.coherence_state
         _set.insert(0, _set.pop(-1))  # Write in position for LRU
-        return
+        return original
 
 
 class CacheBlockStates(Enum):

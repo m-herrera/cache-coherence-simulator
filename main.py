@@ -19,12 +19,13 @@ def main():
     # print(memory.read(0))
 
     memory_bus = MemoryBus()
-    memory = Memory(3)
+    memory = Memory(0)
     memory_controller = MemoryController()
     memory_controller.connect_memory(memory)
     memory_controller.connect_bus(memory_bus)
+    print(memory)
 
-    cache1 = Cache(2)
+    cache1 = Cache(0)
     snooper1 = Snooper()
     snooper1.connect_cache(cache1)
     snooper1.connect_bus(memory_bus)
@@ -32,6 +33,7 @@ def main():
     processor = Processor("P0", 9, snooper=snooper1)
     processor.load_instructions(50)
     processor.execute()
+    print(memory)
     # cache2 = Cache(2)
     # snooper2 = Snooper()
     # snooper2.connect_cache(cache2)

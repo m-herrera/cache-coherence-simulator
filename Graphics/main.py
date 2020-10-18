@@ -1,20 +1,34 @@
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWidgets import QLabel
-from PyQt5.QtWidgets import QWidget
 import sys
+from Model.MemoryBus import MemoryBus
+from Model.MemoryController import MemoryController
+from Model.Processor import *
+from Model.Memory import *
+from Model.Cache import *
+from Model.Snooper import Snooper
+
+from Graphics.App import App
 
 
 def main():
     app = QApplication(sys.argv)
-    window = QWidget()
-    window.setWindowTitle('PyQt5 App')
-    window.setGeometry(100, 100, 280, 80)
-    window.move(60, 15)
-    hello_msg = QLabel('<h1>Hello World!</h1>', parent=window)
-    hello_msg.move(60, 15)
-    print("Hello World!")
+    ex = App()
+    memory_bus = MemoryBus()
+    memory = Memory(0)
+    memory_controller = MemoryController()
+    memory_controller.connect_memory(memory)
+    memory_controller.connect_bus(memory_bus)
+    ex.update_memory_view(memory)
+    cache1 = Cache(0)
+    snooper1 = Snooper()
+    snooper1.connect_cache(cache1)
+    snooper1.connect_bus(memory_bus)
 
-    window.show()
+    processor = Processor("P0", 9, snooper=snooper1)
+    processor.load_instructions(50)
+    processor.execute()
+    ex.update_memory_view(memory)
+    ex.update_cache_view(cache1, 0)
     sys.exit(app.exec_())
 
 

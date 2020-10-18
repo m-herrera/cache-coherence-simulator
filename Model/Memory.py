@@ -18,8 +18,6 @@ class Memory:
         print("Writing memory contents at address: " + str(address))
         if address >= self.num_blocks:
             print("Write error: Address out of range")
-        elif data >= self.block_size * 255:
-            print("Write error: Data too big")
         time.sleep(self.latency)
         self.content[address] = data
 

@@ -19,6 +19,18 @@ class Snooper:
     def set_processor(self, identifier):
         self.identifier = identifier
 
+    def flush_write_back(self, cache_block):
+        if cache_block is None:
+            return
+        elif cache_block.coherence_state == CacheBlockStates.OWNED or \
+                cache_block.coherence_state == CacheBlockStates.MODIFIED or \
+                cache_block.coherence_state == CacheBlockStates.EXCLUSIVE:
+            request = MemoryRequest()
+            request.type = RequestTypes.FLUSH_WRITE_BACK
+            request.data = cache_block.data
+            request.address = cache_block.address
+            self.memory_bus.post(request)
+
     def process(self, request):
         cache_block = self.cache.get_block(request.address)
         block_coherence_state = cache_block.coherence_state
@@ -38,20 +50,21 @@ class Snooper:
         elif request.type == RequestTypes.PROCESSOR_WRITE:
             if block_coherence_state == CacheBlockStates.INVALID:
                 request.type = RequestTypes.BUS_READ_EXCLUSIVE
-                response = self.memory_bus.post(request)
+                self.memory_bus.post(request)
                 cache_block.data = request.data
                 cache_block.address = request.address
                 cache_block.coherence_state = CacheBlockStates.MODIFIED
-                self.cache.put_block(cache_block)
+                original = self.cache.put_block(cache_block)
+                self.flush_write_back(original)
                 return
             elif block_coherence_state == CacheBlockStates.SHARED or \
                     block_coherence_state == CacheBlockStates.OWNED:
                 request.type = RequestTypes.BUS_UPGRADE
                 self.memory_bus.post(request)
-            # TODO if owned do flush writeback
             cache_block.coherence_state = CacheBlockStates.MODIFIED
             cache_block.data = request.data
-            self.cache.put_block(cache_block)
+            original = self.cache.put_block(cache_block)
+            self.flush_write_back(original)
         else:
             self.memory_bus.post(request)  # Owned replaced
 

@@ -32,7 +32,7 @@ class Cache:
         for cache_set in self.content:
             for cache_block in cache_set:
                 if cache_block.identifier == index:
-                    return cache_block.get_address_str(), cache_block.get_data_str()
+                    return cache_block.get_address_str(), cache_block.get_data_str(), cache_block.coherence_state.name
 
         return None, None
 

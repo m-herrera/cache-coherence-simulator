@@ -26,7 +26,7 @@ def main():
 
     processor = Processor("P0", 9, snooper=snooper1)
     processor.load_instructions(50)
-    processor.execute()
+    # processor.execute()
     ex.update_memory_view(memory)
     ex.update_cache_view(cache1, 0)
     sys.exit(app.exec_())

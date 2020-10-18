@@ -18,17 +18,18 @@ class Processor:
         return self.identifier
 
     def set_next(self, instruction):
+
         try:
             parts = instruction.split()
             if parts[1] == "READ":
                 self.instructions[0].mem_address = int(parts[2], 2)
-                self.instructions[0].type = InstructionTypes.READ
+                self.instructions[0].instruction_type = InstructionTypes.READ
             elif parts[1] == "WRITE":
                 self.instructions[0].mem_address = int(parts[2], 2)
                 self.instructions[0].mem_data = int(parts[3], 16)
-                self.instructions[0].type = InstructionTypes.WRITE
+                self.instructions[0].instruction_type = InstructionTypes.WRITE
             else:
-                self.instructions[0].type = InstructionTypes.CALC
+                self.instructions[0].instruction_type = InstructionTypes.CALC
         except IndexError:
             print("Wrong format")
 
@@ -76,6 +77,7 @@ class Processor:
         instruction = self.instructions[0]
         request = MemoryRequest()
         if instruction.instruction_type == InstructionTypes.CALC:
+            self.instructions.pop(0)
             return
         elif instruction.instruction_type == InstructionTypes.WRITE:
             request.type = RequestTypes.PROCESSOR_WRITE
@@ -84,6 +86,4 @@ class Processor:
         request.address = instruction.mem_address
         request.data = instruction.mem_data
         self.snooper.process(request)
-        print(instruction)
-        print(self.snooper.cache)
         self.instructions.pop(0)

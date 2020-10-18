@@ -1,5 +1,5 @@
 from Model.MemoryRequest import *
-from threading import Lock
+from threading import RLock
 
 
 class MemoryBus:
@@ -8,7 +8,7 @@ class MemoryBus:
         self.request = None
         self.listeners = []
         self.memory_controller = None
-        self.lock = Lock()
+        self.lock = RLock()
 
     def post(self, request):
         # must return a response for the snooper
@@ -25,6 +25,7 @@ class MemoryBus:
                     self.post(temp_response)
             if response.type == RequestTypes.NULL:
                 response = self.memory_controller.notify(request)
+
             return response
 
     def connect_memory_controller(self, memory_controller):

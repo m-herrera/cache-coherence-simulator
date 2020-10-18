@@ -8,6 +8,8 @@ class Snooper:
         self.cache = cache
         self.memory_bus = memory_bus
         self.identifier = None
+        if memory_bus is not None:
+            memory_bus.subscribe(self)
 
     def connect_cache(self, cache):
         self.cache = cache
@@ -76,7 +78,7 @@ class Snooper:
         response.copies_exist = True
         response.address = request.address
         response.type = RequestTypes.RESPONSE
-        if block_coherence_state == CacheBlockStates.INVALID:
+        if block_coherence_state == CacheBlockStates.INVALID or request.type == RequestTypes.RESPONSE:
             response.copies_exist = False
             response.type = RequestTypes.NULL
         elif block_coherence_state == CacheBlockStates.EXCLUSIVE:

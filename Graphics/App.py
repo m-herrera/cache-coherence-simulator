@@ -35,10 +35,10 @@ class App(QWidget):
         self.init_cache_view()
 
         self.init_memory_view()
-        self.layout.addWidget(QLabel(" "), 7, 0, -1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel(" "), 9, 0, -1, 1, Qt.AlignCenter)
         self.layout.addWidget(QLabel("test"), 0, 0, -1, 1, Qt.AlignVCenter)
         self.layout.addWidget(QLabel("Memory View"), 0, 3, 1, -1, Qt.AlignCenter)
-        self.layout.addWidget(self.memory_view, 1, 3, 6, 1, Qt.AlignHCenter)
+        self.layout.addWidget(self.memory_view, 1, 3, 8, 1, Qt.AlignHCenter)
 
         self.layout.addWidget(QLabel("Cache View"), 0, 1, 1, 2, Qt.AlignCenter)
         self.layout.addWidget(QLabel("Processor: 0"), 1, 1, 1, 1, Qt.AlignCenter)
@@ -65,8 +65,6 @@ class App(QWidget):
         i = 0
         threads = []
         for processor in self.processors:
-            self.instructions[i].setText(processor.instructions[0].__str__())
-            print(processor.instructions[0])
             thread = threading.Thread(target=processor.execute)
             thread.start()
             threads.append(thread)
@@ -74,6 +72,7 @@ class App(QWidget):
 
         for thread in threads:
             thread.join()
+        print("end")
         self.update_cache()
         self.update_memory_view(self.memory)
 

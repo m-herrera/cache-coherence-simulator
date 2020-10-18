@@ -60,10 +60,26 @@ class Cache:
         print("Miss")
         return None
 
-    def get_block(self):
-        return
+    def get_block(self, address):
+        _set = self.content[address % (self.num_blocks // self.associativity)]
+        for cache_block in _set:
+            hit = cache_block.address == address
+            if hit:
+                return cache_block
+        return CacheBlock(-1)
 
-    def put_block(self):
+    def put_block(self, cache_block):
+        _set = self.content[cache_block.address % (self.num_blocks // self.associativity)]
+        for block in _set:
+            hit = block.address == cache_block.address
+            if hit:
+                block.data = cache_block.data
+                _set.insert(0, _set.pop(_set.index(block)))  # Update for LRU policy
+                return
+        _set[-1].address = cache_block.address
+        _set[-1].data = cache_block.data
+        _set[-1].coherence_state = cache_block.coherence_state
+        _set.insert(0, _set.pop(-1))  # Write in position for LRU
         return
 
 

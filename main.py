@@ -29,21 +29,24 @@ def main():
     snooper1.connect_cache(cache1)
     snooper1.connect_bus(memory_bus)
 
-    cache2 = Cache(2)
-    snooper2 = Snooper()
-    snooper2.connect_cache(cache2)
-    snooper2.connect_bus(memory_bus)
-
-    cache3 = Cache(2)
-    snooper3 = Snooper()
-    snooper3.connect_cache(cache3)
-    snooper3.connect_bus(memory_bus)
-
-    cache4 = Cache(2)
-    snooper4 = Snooper()
-    snooper4.connect_cache(cache4)
-    snooper4.connect_bus(memory_bus)
-    memory_bus.connect_memory_controller(memory_controller)
+    processor = Processor("P0", 9, snooper=snooper1)
+    processor.load_instructions(50)
+    processor.execute()
+    # cache2 = Cache(2)
+    # snooper2 = Snooper()
+    # snooper2.connect_cache(cache2)
+    # snooper2.connect_bus(memory_bus)
+    #
+    # cache3 = Cache(2)
+    # snooper3 = Snooper()
+    # snooper3.connect_cache(cache3)
+    # snooper3.connect_bus(memory_bus)
+    #
+    # cache4 = Cache(2)
+    # snooper4 = Snooper()
+    # snooper4.connect_cache(cache4)
+    # snooper4.connect_bus(memory_bus)
+    # memory_bus.connect_memory_controller(memory_controller)
 
 
 if __name__ == "__main__":

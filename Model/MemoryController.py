@@ -11,7 +11,7 @@ class MemoryController:
 
     def connect_bus(self, memory_bus):
         self.memory_bus = memory_bus
-        memory_bus.subscribe(self)
+        memory_bus.connect_memory_controller(self)
 
     def notify(self, request):
         response = MemoryRequest()

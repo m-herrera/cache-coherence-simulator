@@ -27,25 +27,31 @@ class Snooper:
                 request.type = RequestTypes.BUS_READ
                 response = self.memory_bus.post(request)
                 cache_block.data = response.data
+                cache_block.address = request.address
                 if response.copies_exist:
                     cache_block.coherence_state = CacheBlockStates.SHARED
                 else:
                     cache_block.coherence_state = CacheBlockStates.EXCLUSIVE
             # All other states (MOES) imply a cache hit
-            return cache_block.data
+            self.cache.put_block(cache_block)
+            return
         elif request.type == RequestTypes.PROCESSOR_WRITE:
             if block_coherence_state == CacheBlockStates.INVALID:
                 request.type = RequestTypes.BUS_READ_EXCLUSIVE
                 response = self.memory_bus.post(request)
-                cache_block.data = response.data
+                cache_block.data = request.data
+                cache_block.address = request.address
                 cache_block.coherence_state = CacheBlockStates.MODIFIED
+                self.cache.put_block(cache_block)
                 return
             elif block_coherence_state == CacheBlockStates.SHARED or \
                     block_coherence_state == CacheBlockStates.OWNED:
                 request.type = RequestTypes.BUS_UPGRADE
                 self.memory_bus.post(request)
+            # TODO if owned do flush writeback
             cache_block.coherence_state = CacheBlockStates.MODIFIED
             cache_block.data = request.data
+            self.cache.put_block(cache_block)
         else:
             self.memory_bus.post(request)  # Owned replaced
 

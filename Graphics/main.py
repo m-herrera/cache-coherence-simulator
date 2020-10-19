@@ -18,7 +18,7 @@ def main():
 
     memory_bus = MemoryBus()
 
-    memory = Memory(0)
+    memory = Memory(3)
     memory_controller = MemoryController(memory, memory_bus)
 
     cache1 = Cache(0)

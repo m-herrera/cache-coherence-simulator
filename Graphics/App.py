@@ -1,8 +1,10 @@
 import threading
-
-from PyQt5.QtCore import Qt, QSize
+import time
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QTableWidget, QAbstractItemView, QTableWidgetItem, \
     QGridLayout, QHeaderView, QLabel, QPushButton, QLineEdit
+
+execution = False
 
 
 class App(QWidget):
@@ -18,11 +20,13 @@ class App(QWidget):
         self.layout = QGridLayout()
         self.step_button = QPushButton("Step")
         self.exec_button = QPushButton("Execute")
+        self.pause_button = QPushButton("Pause")
         self.processors = []
         self.caches = []
         self.instructions = [None, None, None, None]
         self.next_instructions = [None, None, None, None]
         self.memory = None
+        self.threads = []
         self.init_ui()
 
     def init_ui(self):
@@ -55,49 +59,58 @@ class App(QWidget):
         self.layout.addWidget(self.step_button, 2, 0)
         self.step_button.clicked.connect(lambda: self.step())
         self.layout.addWidget(self.exec_button, 3, 0)
-        self.exec_button.clicked.connect(lambda: self.execute())
+        self.exec_button.clicked.connect(lambda: self.thread_execute())
+        self.layout.addWidget(self.pause_button, 4, 0)
+        self.pause_button.clicked.connect(lambda: self.pause_execution())
 
         self.setLayout(self.layout)
-        # Show widget
         self.show()
 
-    def execute(self):
-        i = 0
-        threads = []
-        for processor in self.processors:
-            thread = threading.Thread(target=processor.execute)
-            thread.start()
-            threads.append(thread)
-            i += 1
+    def thread_execute(self):
+        # self.execute()
+        thread = threading.Thread(target=self.execute, daemon=True)
+        thread.start()
 
-        for thread in threads:
-            thread.join()
-        print("end")
-        self.update_cache()
-        self.update_memory_view(self.memory)
+    def execute(self):
+        global execution
+        if execution:
+            return
+        execution = True
+
+        while True:
+            if not execution:
+                break
+            self.step()
+            time.sleep(1)
+
+    def pause_execution(self):
+        global execution
+        execution = False
+
+    def exec_step(self):
+        if execution:
+            return
+        self.step()
 
     def step(self):
         i = 0
-        threads = []
+        self.memory.tick()
         for processor in self.processors:
-            if len(processor.instructions) == 0:
-                return
+            if processor.busy or len(processor.instructions) == 0:
+                i += 1
+                continue
             if self.instructions[i].text() == "":
                 self.next_instructions[i].setText(processor.instructions[0].__str__())
             self.instructions[i].setText(self.next_instructions[i].text())
             if len(processor.instructions) != 1:
                 self.next_instructions[i].setText(processor.instructions[1].__str__())
             else:
-                self.next_instructions[i].setText("")
+                processor.load_instructions(100)
+
             processor.set_next(self.instructions[i].text())
-            # processor.instructions[]
-            thread = threading.Thread(target=processor.step_execute)
-            thread.start()
-            threads.append(thread)
+            processor.cycles += 1
             i += 1
 
-        for thread in threads:
-            thread.join()
         self.update_cache()
         self.update_memory_view(self.memory)
 
@@ -105,6 +118,9 @@ class App(QWidget):
         self.processors.append(processor)
         self.add_cache(processor.snooper.cache)
         self.set_instruction("", len(self.processors))
+        thread = threading.Thread(target=processor.execute, daemon=True)
+        thread.start()
+        self.threads.append(thread)
 
     def add_cache(self, cache):
         self.caches.append(cache)
@@ -189,3 +205,4 @@ class App(QWidget):
             data = QTableWidgetItem(cache.get_item(i)[2])
             data.setTextAlignment(Qt.AlignCenter)
             self.cache_views[index].setItem(i, 2, data)
+            self.cache_views[index].update()

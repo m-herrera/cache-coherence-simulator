@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from Model.Instruction import *
 import matplotlib.pyplot as plt
@@ -13,6 +15,8 @@ class Processor:
         self.instructions = []
         self.memory_blocks = memory_blocks
         self.snooper = snooper
+        self.busy = False
+        self.cycles = 0
 
     def __str__(self):
         return self.identifier
@@ -36,8 +40,8 @@ class Processor:
     def load_instructions(self, amount):
         sigma = 1
         distribution = np.random.normal(0, sigma, amount)
-        plt.hist(distribution, 30, density=True)
-        plt.show()
+        # plt.hist(distribution, 30, density=True)
+        # plt.show()
         rw_instructions = 0
         for point in distribution:
             instruction = Instruction(self.identifier)  # default instruction type is CALC
@@ -51,8 +55,8 @@ class Processor:
             self.instructions.append(instruction)
 
         _lambda = 16
-        distribution = np.random.poisson(_lambda, rw_instructions)
-        plt.hist(distribution, self.memory_blocks, density=True)
+        # distribution = np.random.poisson(_lambda, rw_instructions)
+        # plt.hist(distribution, self.memory_blocks, density=True)
         plt.show()
         minx = min(distribution)
         max_x = max(distribution)
@@ -70,14 +74,18 @@ class Processor:
                 i += 1
 
     def execute(self):
-        for i in range(len(self.instructions)):
-            self.step_execute()
+        while True:
+            time.sleep(1)
+            if self.cycles != 0:
+                self.step_execute()
+                self.cycles -= 1
 
     def step_execute(self):
         instruction = self.instructions[0]
         request = MemoryRequest()
         if instruction.instruction_type == InstructionTypes.CALC:
             self.instructions.pop(0)
+            self.busy = False
             return
         elif instruction.instruction_type == InstructionTypes.WRITE:
             request.type = RequestTypes.PROCESSOR_WRITE
@@ -85,5 +93,7 @@ class Processor:
             request.type = RequestTypes.PROCESSOR_READ
         request.address = instruction.mem_address
         request.data = instruction.mem_data
+        self.busy = True
         self.snooper.process(request)
+        self.busy = False
         self.instructions.pop(0)

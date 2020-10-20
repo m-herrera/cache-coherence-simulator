@@ -18,10 +18,12 @@ class Memory:
         self.ticks += 1
 
     def write(self, address, data):
+        print("Memory Written")
         self.ticks = 0
         if address >= self.num_blocks:
             print("Write error: Address out of range")
         while self.ticks < self.latency:
+            time.sleep(0.1)
             continue
         self.ticks = 0
         print(address)

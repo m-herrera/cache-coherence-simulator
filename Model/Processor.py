@@ -75,7 +75,7 @@ class Processor:
 
     def execute(self):
         while True:
-            time.sleep(1)
+            time.sleep(0.1)
             if self.cycles != 0:
                 self.step_execute()
                 self.cycles -= 1

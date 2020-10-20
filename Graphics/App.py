@@ -39,29 +39,39 @@ class App(QWidget):
         self.init_cache_view()
 
         self.init_memory_view()
-        self.layout.addWidget(QLabel(" "), 9, 0, -1, 1, Qt.AlignCenter)
-        self.layout.addWidget(QLabel("test"), 0, 0, -1, 1, Qt.AlignVCenter)
-        self.layout.addWidget(QLabel("Memory View"), 0, 3, 1, -1, Qt.AlignCenter)
-        self.layout.addWidget(self.memory_view, 1, 3, 8, 1, Qt.AlignHCenter)
+        self.layout.addWidget(QLabel(" "), 10, 1, -1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel(" "), 0, 0, 1, -1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel(" "), 0, 5, 1, -1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel(" "), 0, 7, 1, -1, Qt.AlignCenter)
+        mem_view_label = QLabel("Memory View")
+        mem_view_label.setStyleSheet("font-size:15pt; font-weight:600; color:#000000;")
+        self.layout.addWidget(mem_view_label, 0, 6, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.memory_view, 1, 6, 9, 1, Qt.AlignHCenter)
 
-        self.layout.addWidget(QLabel("Cache View"), 0, 1, 1, 2, Qt.AlignCenter)
-        self.layout.addWidget(QLabel("Processor: 0"), 1, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(QLabel("Processor: 1"), 1, 2, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(QLabel("Processor: 2"), 5, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(QLabel("Processor: 3"), 5, 2, 1, 1, Qt.AlignCenter)
+        processor_view_label = QLabel("Processor View")
+        processor_view_label.setStyleSheet("font-size:15pt; font-weight:600; color:#000000;")
+        self.layout.addWidget(processor_view_label, 0, 1, 1, 4, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 0"), 2, 1, 1, 2, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 1"), 2, 3, 1, 2, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 2"), 6, 1, 1, 2, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("Processor: 3"), 6, 3, 1, 2, Qt.AlignCenter)
 
-        self.layout.addWidget(self.cache_views[0], 4, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.cache_views[1], 4, 2, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.cache_views[2], 8, 1, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.cache_views[3], 8, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[0], 5, 1, 1, 2, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[1], 5, 3, 1, 2, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[2], 9, 1, 1, 2, Qt.AlignCenter)
+        self.layout.addWidget(self.cache_views[3], 9, 3, 1, 2, Qt.AlignCenter)
 
-        self.layout.addWidget(QLabel("Instructions View"), 0, 0, 1, 1, Qt.AlignCenter)
-        self.layout.addWidget(self.step_button, 2, 0)
+        self.layout.addWidget(self.step_button, 1, 1, alignment=Qt.AlignCenter)
+        self.step_button.setMinimumWidth(175)
         self.step_button.clicked.connect(lambda: self.step())
-        self.layout.addWidget(self.exec_button, 3, 0)
+
+        self.layout.addWidget(self.exec_button, 1, 2, 1, 2, alignment=Qt.AlignCenter)
+        self.exec_button.setMinimumWidth(175)
         self.exec_button.clicked.connect(lambda: self.thread_execute())
-        self.layout.addWidget(self.pause_button, 4, 0)
+
+        self.layout.addWidget(self.pause_button, 1, 4, alignment=Qt.AlignCenter)
         self.pause_button.clicked.connect(lambda: self.pause_execution())
+        self.pause_button.setMinimumWidth(175)
 
         self.setLayout(self.layout)
         self.show()
@@ -86,11 +96,6 @@ class App(QWidget):
     def pause_execution(self):
         global execution
         execution = False
-
-    def exec_step(self):
-        if execution:
-            return
-        self.step()
 
     def step(self):
         i = 0
@@ -131,22 +136,25 @@ class App(QWidget):
         self.update_memory_view(self.memory)
 
     def set_instruction(self, instruction, processor):
-        i = 2
+        i = 3
         j = 1
         self.next_instructions[processor - 1] = QLineEdit(instruction)
+        self.next_instructions[processor - 1].setMinimumWidth(250)
+        self.next_instructions[processor - 1].setAlignment(Qt.AlignCenter)
+
         self.instructions[processor - 1] = QLabel(instruction)
         if processor == 1:
-            self.layout.addWidget(self.instructions[processor - 1], i, j, 1, 1, Qt.AlignCenter)
-            self.layout.addWidget(self.next_instructions[processor - 1], i + 1, j, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i, j, 1, 2, Qt.AlignCenter)
+            self.layout.addWidget(self.next_instructions[processor - 1], i + 1, j, 1, 2, Qt.AlignCenter)
         elif processor == 2:
-            self.layout.addWidget(self.instructions[processor - 1], i, j + 1, 1, 1, Qt.AlignCenter)
-            self.layout.addWidget(self.next_instructions[processor - 1], i + 1, j + 1, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i, j + 2, 1, 2, Qt.AlignCenter)
+            self.layout.addWidget(self.next_instructions[processor - 1], i + 1, j + 2, 1, 2, Qt.AlignCenter)
         elif processor == 3:
-            self.layout.addWidget(self.instructions[processor - 1], i + 4, j, 1, 1, Qt.AlignCenter)
-            self.layout.addWidget(self.next_instructions[processor - 1], i + 5, j, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i + 4, j, 1, 2, Qt.AlignCenter)
+            self.layout.addWidget(self.next_instructions[processor - 1], i + 5, j, 1, 2, Qt.AlignCenter)
         elif processor == 4:
-            self.layout.addWidget(self.instructions[processor - 1], i + 4, j + 1, 1, 1, Qt.AlignCenter)
-            self.layout.addWidget(self.next_instructions[processor - 1], i + 5, j + 1, 1, 1, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i + 4, j + 2, 1, 2, Qt.AlignCenter)
+            self.layout.addWidget(self.next_instructions[processor - 1], i + 5, j + 2, 1, 2, Qt.AlignCenter)
 
     def init_memory_view(self, memory_blocks=16):
         self.memory_view = QTableWidget()

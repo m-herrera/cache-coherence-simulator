@@ -17,6 +17,7 @@ class Processor:
         self.snooper = snooper
         self.busy = False
         self.cycles = 0
+        snooper.set_processor(identifier)
 
     def __str__(self):
         return self.identifier

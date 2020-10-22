@@ -30,7 +30,6 @@ class Memory:
             self.ticks = 0
             self.content[address] = data
 
-
     def read(self, address):
         with self.lock:
             self.ticks = 0

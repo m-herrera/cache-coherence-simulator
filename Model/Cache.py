@@ -59,7 +59,6 @@ class Cache:
         to_replace.data = cache_block.data
         to_replace.coherence_state = cache_block.coherence_state
         _set.insert(0, _set.pop(-1))  # Write in position for LRU
-        print(to_replace)
         return original
 
 

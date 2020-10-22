@@ -27,9 +27,12 @@ class App(QWidget):
         self.lock3_button = QPushButton("lock")
         self.lock4_button = QPushButton("lock")
 
+        self.steps = QLineEdit();
+
         self.processors = []
         self.caches = []
         self.instructions = [None, None, None, None]
+        self.hits = [QLabel(), QLabel(), QLabel(), QLabel()]
         self.next_instructions = [None, None, None, None]
         self.memory = None
         self.threads = []
@@ -72,9 +75,14 @@ class App(QWidget):
         self.step_button.setMinimumWidth(175)
         self.step_button.clicked.connect(lambda: self.step())
 
-        self.layout.addWidget(self.exec_button, 1, 2, 1, 2, alignment=Qt.AlignCenter)
+        self.layout.addWidget(self.exec_button, 1, 2, 1, 1, alignment=Qt.AlignCenter)
         self.exec_button.setMinimumWidth(175)
         self.exec_button.clicked.connect(lambda: self.thread_execute())
+
+        self.layout.addWidget(self.steps, 1, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.steps.setMinimumWidth(175)
+        self.steps.setPlaceholderText("Steps")
+        self.steps.setAlignment(Qt.AlignCenter)
 
         self.layout.addWidget(self.pause_button, 1, 4, alignment=Qt.AlignCenter)
         self.pause_button.clicked.connect(lambda: self.pause_execution())
@@ -88,6 +96,11 @@ class App(QWidget):
         self.lock3_button.clicked.connect(lambda: self.lock(3))
         self.layout.addWidget(self.lock4_button, 6, 4, alignment=Qt.AlignCenter)
         self.lock4_button.clicked.connect(lambda: self.lock(4))
+
+        self.layout.addWidget(self.hits[0], 3, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.hits[1], 3, 4, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.hits[2], 7, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.hits[3], 7, 4, 1, 1, Qt.AlignCenter)
 
         self.setLayout(self.layout)
         self.show()
@@ -116,12 +129,21 @@ class App(QWidget):
         if execution:
             return
         execution = True
-
-        while True:
-            if not execution:
-                break
-            self.step()
-            time.sleep(1)
+        try:
+            steps = int(self.steps.text())
+            for i in range(steps):
+                self.step()
+                time.sleep(1)
+                self.steps.setText(str(steps - 1 - i))
+                self.steps.update()
+        except:
+            while True:
+                if not execution:
+                    break
+                self.step()
+                time.sleep(1)
+        self.steps.setText("")
+        execution = False
 
     def pause_execution(self):
         global execution
@@ -145,6 +167,8 @@ class App(QWidget):
             processor.set_next(self.instructions[i].text())
             processor.cycles += 1
             i += 1
+            for hit in self.hits:
+                hit.setText("")
 
         self.update_cache()
         self.update_memory_view(self.memory)
@@ -174,16 +198,17 @@ class App(QWidget):
 
         self.instructions[processor - 1] = QLabel(instruction)
         if processor == 1:
-            self.layout.addWidget(self.instructions[processor - 1], i, j, 1, 2, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i, j, 1, 1, Qt.AlignCenter)
             self.layout.addWidget(self.next_instructions[processor - 1], i + 1, j, 1, 2, Qt.AlignCenter)
+
         elif processor == 2:
-            self.layout.addWidget(self.instructions[processor - 1], i, j + 2, 1, 2, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i, j + 2, 1, 1, Qt.AlignCenter)
             self.layout.addWidget(self.next_instructions[processor - 1], i + 1, j + 2, 1, 2, Qt.AlignCenter)
         elif processor == 3:
-            self.layout.addWidget(self.instructions[processor - 1], i + 4, j, 1, 2, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i + 4, j, 1, 1, Qt.AlignCenter)
             self.layout.addWidget(self.next_instructions[processor - 1], i + 5, j, 1, 2, Qt.AlignCenter)
         elif processor == 4:
-            self.layout.addWidget(self.instructions[processor - 1], i + 4, j + 2, 1, 2, Qt.AlignCenter)
+            self.layout.addWidget(self.instructions[processor - 1], i + 4, j + 2, 1, 1, Qt.AlignCenter)
             self.layout.addWidget(self.next_instructions[processor - 1], i + 5, j + 2, 1, 2, Qt.AlignCenter)
 
     def init_memory_view(self, memory_blocks=16):
@@ -245,3 +270,19 @@ class App(QWidget):
             data.setTextAlignment(Qt.AlignCenter)
             self.cache_views[index].setItem(i, 2, data)
             self.cache_views[index].update()
+
+    def hit(self, processor):
+        try:
+            i = int(processor[1])
+            self.hits[i].setText("HIT")
+            self.hits[i].update()
+        except:
+            print("hit by " + processor)
+
+    def miss(self, processor):
+        try:
+            i = int(processor[1])
+            self.hits[i].setText("MISS")
+            self.hits[i].update()
+        except:
+            print("miss by " + processor)

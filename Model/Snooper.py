@@ -3,13 +3,15 @@ from Model.MemoryRequest import RequestTypes, MemoryRequest
 
 
 class Snooper:
-    def __init__(self, cache=None, memory_bus=None):
+    def __init__(self, cache=None, memory_bus=None, app=None):
         self.current_block = None  # None means not waiting for data
         self.cache = cache
         self.memory_bus = memory_bus
         self.identifier = None
+        self.app = app
         if memory_bus is not None:
             memory_bus.subscribe(self)
+        self.action = ""
 
     def connect_cache(self, cache):
         self.cache = cache
@@ -37,6 +39,7 @@ class Snooper:
         block_coherence_state = cache_block.coherence_state
         if request.type == RequestTypes.PROCESSOR_READ:
             if block_coherence_state == CacheBlockStates.INVALID:
+                self.app.miss(self.identifier)
                 request.type = RequestTypes.BUS_READ
                 response = self.memory_bus.post(request)
                 cache_block.data = response.data
@@ -45,11 +48,14 @@ class Snooper:
                     cache_block.coherence_state = CacheBlockStates.SHARED
                 else:
                     cache_block.coherence_state = CacheBlockStates.EXCLUSIVE
+            else:
+                self.app.hit(self.identifier)
             # All other states (MOES) imply a cache hit
             self.cache.put_block(cache_block)
             return
         elif request.type == RequestTypes.PROCESSOR_WRITE:
             if block_coherence_state == CacheBlockStates.INVALID:
+                self.app.miss(self.identifier)
                 request.type = RequestTypes.BUS_READ_EXCLUSIVE
                 self.memory_bus.post(request)
                 cache_block.data = request.data
@@ -60,8 +66,10 @@ class Snooper:
                 return
             elif block_coherence_state == CacheBlockStates.SHARED or \
                     block_coherence_state == CacheBlockStates.OWNED:
+                self.app.hit(self.identifier)
                 request.type = RequestTypes.BUS_UPGRADE
                 self.memory_bus.post(request)
+            self.app.hit(self.identifier)
             cache_block.coherence_state = CacheBlockStates.MODIFIED
             cache_block.data = request.data
             original = self.cache.put_block(cache_block)

@@ -3,14 +3,16 @@ from threading import RLock
 
 
 class MemoryBus:
-    def __init__(self):
+    def __init__(self, app):
         self.busy = False
         self.request = None
         self.listeners = []
         self.memory_controller = None
         self.lock = RLock()
+        self.app = app
 
     def post(self, request):
+        self.app.set_bus(request.type)
         # must return a response for the snooper
         with self.lock:
             response = MemoryRequest()

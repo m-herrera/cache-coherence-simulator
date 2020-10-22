@@ -16,7 +16,7 @@ def main():
     app = QApplication(sys.argv)
     ex = App()
 
-    memory_bus = MemoryBus()
+    memory_bus = MemoryBus(ex)
 
     memory = Memory(3)
     memory_controller = MemoryController(memory, memory_bus)

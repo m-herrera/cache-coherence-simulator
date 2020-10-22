@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QTableWidget, QAbstractItemView, QTableWidgetItem, \
     QGridLayout, QHeaderView, QLabel, QPushButton, QLineEdit
 
+from Model.MemoryRequest import RequestTypes
+
 execution = False
 
 
@@ -27,7 +29,9 @@ class App(QWidget):
         self.lock3_button = QPushButton("lock")
         self.lock4_button = QPushButton("lock")
 
-        self.steps = QLineEdit();
+        self.steps = QLineEdit()
+
+        self.bus = QLabel(" ")
 
         self.processors = []
         self.caches = []
@@ -49,7 +53,9 @@ class App(QWidget):
         self.init_cache_view()
 
         self.init_memory_view()
-        self.layout.addWidget(QLabel(" "), 10, 1, -1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel("BUS TRANSACTION:"), 10, 1, -1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.bus, 10, 2, -1, 1, Qt.AlignCenter)
+        self.layout.addWidget(QLabel(" "), 11, 1, -1, 1, Qt.AlignCenter)
         self.layout.addWidget(QLabel(" "), 0, 0, 1, -1, Qt.AlignCenter)
         self.layout.addWidget(QLabel(" "), 0, 5, 1, -1, Qt.AlignCenter)
         self.layout.addWidget(QLabel(" "), 0, 7, 1, -1, Qt.AlignCenter)
@@ -286,3 +292,7 @@ class App(QWidget):
             self.hits[i].update()
         except:
             print("miss by " + processor)
+
+    def set_bus(self, request):
+        if request != RequestTypes.RESPONSE:
+            self.bus.setText(request.name)
